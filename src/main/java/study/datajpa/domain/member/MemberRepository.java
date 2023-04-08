@@ -1,10 +1,12 @@
 package study.datajpa.domain.member;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.controller.dto.member.MemberTestDto;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -37,5 +39,16 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findListByUsername(String username); //컬렉션
     Member findOneByUsername(String username); //단건
     Optional<Member> findOptionalByUsername(String username); //단건
+
+    // 페이징
+    @Query(
+            value = "select m from Member m left join m.team t",
+            countQuery = "select count(m.username) from Member m") // count query 분리
+    Page<Member> findByAge(int age, Pageable pageable);
+
+    // Bulk Update
+    @Modifying(clearAutomatically = true)
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 
 }

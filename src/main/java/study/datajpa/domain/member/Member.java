@@ -34,6 +34,11 @@ public class Member {
         }
     }
 
+    public Member(String username, int age) {
+        this.username = username;
+        this.age = age;
+    }
+
     public void changeTeam(Team newTeam){
         // 기존의 팀에서 해당 Member 제거
         if (this.team != null) {

@@ -5,11 +5,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.controller.dto.member.MemberTestDto;
 import study.datajpa.domain.team.Team;
 import study.datajpa.domain.team.TeamRepository;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -23,22 +28,23 @@ class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
     @Autowired TeamRepository teamRepository;
+    @PersistenceContext EntityManager em;
 
     @BeforeEach
     void beforeAll() {
         //TODO 고아객체 설정 및 테스트
 
-        Team teamA = new Team("teamA");
-        Team teamB = new Team("teamB");
-
-        Member member1 = Member.builder().username("memberA").age(10).team(teamA).build();
-        Member member2 = Member.builder().username("memberA").age(20).team(teamB).build();
-
-        teamRepository.save(teamA);
-        teamRepository.save(teamB);
-
-        memberRepository.save(member1);
-        memberRepository.save(member2);
+//        Team teamA = new Team("teamA");
+//        Team teamB = new Team("teamB");
+//
+//        Member member1 = Member.builder().username("memberA").age(10).team(teamA).build();
+//        Member member2 = Member.builder().username("memberA").age(20).team(teamB).build();
+//
+//        teamRepository.save(teamA);
+//        teamRepository.save(teamB);
+//
+//        memberRepository.save(member1);
+//        memberRepository.save(member2);
     }
 
     @Test
@@ -125,6 +131,60 @@ class MemberRepositoryTest {
         System.out.println(user);
         System.out.println(optionalUser.get());
 
+    }
+
+    @Test
+    void pagingTest(){
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        //when
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+
+        //then
+        List<Member> content = page.getContent();
+        long totalElements = page.getTotalElements();
+
+        for (Member member : content) {
+            System.out.println("member = " + member);
+        }
+        System.out.println("totalElements = " + totalElements);
+
+        // 참고로 Slice<Member> 슬라이스는 전체갯수, 전체페이지를 가져올 수 없음
+        assertThat(content.size()).isEqualTo(3); // 갯수
+        assertThat(page.getTotalElements()).isEqualTo(5); // Page는 count 쿼리 포함하니, total 갯수도 알 수 있음
+        assertThat(page.getNumber()).isEqualTo(0); // 현재 페이지
+        assertThat(page.getTotalPages()).isEqualTo(2); // 총 페이지
+        assertThat(page.isFirst()).isTrue();
+        assertThat(page.isLast()).isFalse();
+        assertThat(page.hasNext()).isTrue();
+    }
+
+    @Test
+    void bulkUpdateTest(){
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 15));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 30));
+        memberRepository.save(new Member("member5", 40));
+
+        //when
+        int resultCount = memberRepository.bulkAgePlus(20);
+
+        //then
+        assertThat(resultCount).isEqualTo(3);
+        
+        List<Member> members = memberRepository.findAll();
+        for (Member member : members) {
+            System.out.println("member = " + member);
+        }
     }
 
 }
