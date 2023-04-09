@@ -187,4 +187,40 @@ class MemberRepositoryTest {
         }
     }
 
+    @Test
+    void fetchJoinTest(){
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        Team teamC = new Team("teamC");
+        Team teamD = new Team("teamD");
+        Team teamE = new Team("teamE");
+
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+        teamRepository.save(teamC);
+        teamRepository.save(teamD);
+        teamRepository.save(teamE);
+
+        memberRepository.save(new Member("memberA", 10, teamA));
+        memberRepository.save(new Member("memberA", 20, teamB));
+        memberRepository.save(new Member("memberA", 30, teamC));
+        memberRepository.save(new Member("memberA", 40, teamD));
+        memberRepository.save(new Member("memberA", 50, teamE));
+        
+        em.flush();
+        em.clear();
+
+        System.out.println("=========================================================================================");
+
+        //List<Member> members = memberRepository.findAll();
+        //List<Member> members = memberRepository.findAllFetchJoin();
+        //List<Member> members = memberRepository.findMemberEntityGraph();
+        //List<Member> members = memberRepository.findByUsername("memberA");
+        List<Member> members = memberRepository.findNamedEntityGraphByUsername("memberA");
+
+        for (Member member : members) {
+            System.out.println("member = " + member + ", " + "member.team().getName() = " + member.getTeam().getName()) ;
+        }
+    }
+
 }
