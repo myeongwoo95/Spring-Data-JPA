@@ -223,4 +223,34 @@ class MemberRepositoryTest {
         }
     }
 
+    @Test
+    void queryHint(){
+        memberRepository.save(new Member("memberA", 10));
+        em.flush();
+        em.clear();
+
+        Member findMember = memberRepository.findReadOnlyByUsername("memberA");
+        // findMember.setUsername("memberB") -> 동작안함 queryHint로 ReadOnly true를 주었기때문에 스냅샷이 없음
+    }
+
+    @Test
+    void lockTest(){
+        memberRepository.save(new Member("memberA", 10));
+        em.flush();
+        em.clear();
+
+        List<Member> members = memberRepository.findLockByUsername("memberA");
+    }
+
+    @Test
+    void callCustom(){
+        memberRepository.save(new Member("memberA", 10));
+        memberRepository.save(new Member("memberB", 10));
+
+        List<Member> memberCustom = memberRepository.findMemberCustom();
+        for (Member member : memberCustom) {
+            System.out.println("member = " + member);
+        }
+    }
+
 }
