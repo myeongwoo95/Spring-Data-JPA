@@ -1,6 +1,7 @@
 package study.datajpa.domain.member;
 
 import lombok.*;
+import study.datajpa.domain.JpaBaseEntity;
 import study.datajpa.domain.team.Team;
 
 import javax.persistence.*;
@@ -14,7 +15,7 @@ import javax.persistence.*;
         query= "select m from Member m where m.username = :username"
 )
 @NamedEntityGraph(name = "Member.all", attributeNodes = @NamedAttributeNode("team"))
-public class Member {
+public class Member extends JpaBaseEntity {
 
     @Id @GeneratedValue
     @Column(name = "member_id")
